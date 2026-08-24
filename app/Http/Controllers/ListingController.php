@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Listing;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ListingController extends Controller
@@ -100,6 +101,7 @@ class ListingController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
+            Storage::disk('public')->delete($request->former_image);
             $formFields['logo'] = $request->file('logo')->store('logos', 'public');
         }
 
@@ -113,6 +115,7 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
+        Storage::disk('public')->delete($listing->logo);
         $listing->delete();
         return to_route('listings.index')->with('message', 'Listing deleted successfully');
     }
