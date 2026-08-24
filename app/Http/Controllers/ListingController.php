@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Listing;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ListingController extends Controller
 {
@@ -14,7 +15,7 @@ class ListingController extends Controller
     {
         if ($request->tag) {
             return view('listings', [
-                'listings' => Listing::where('tags', 'LIKE', "%$request->tag%")->get()
+                'listings' => Listing::where('tags', 'LIKE', "%$request->tag%")->paginate(8)
             ]);
         } elseif ($request->search) {
             return view('listings', [
@@ -22,12 +23,11 @@ class ListingController extends Controller
                     ->orWhere('tags', 'LIKE', "%$request->search%")
                     ->orWhere('company', 'LIKE', "%$request->search%")
                     ->orWhere('description', 'LIKE', "%$request->search%")
-                    ->orWhere('location', 'LIKE', "%$request->search%")
-                    ->get()
+                    ->paginate(8)
             ]);
         };
         return view('listings', [
-            'listings' => Listing::latest()->get()
+            'listings' => Listing::latest()->simplePaginate(8)
         ]);
     }
 
@@ -36,7 +36,7 @@ class ListingController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**
@@ -44,7 +44,24 @@ class ListingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $formFields = $request->validate([
+            'title' => ['required', 'max:40'],
+            'company' => ['required', Rule::unique('listings', 'company')],
+            'location' => ['required'],
+            'website' => ['required'],
+            'tags' => ['required'],
+            'email' => ['required', 'email'],
+            'description' => 'required',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $formFields['logo'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        Listing::create($formFields);
+
+        return redirect('/')->with('message', 'Listing created successfully!');
     }
 
     /**
@@ -60,24 +77,43 @@ class ListingController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Listing $listing)
     {
-        //
+        return view('edit', [
+            'listing' => $listing
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Listing $listing)
     {
-        //
+        $formFields = $request->validate([
+            'title' => ['required', 'max:40'],
+            'company' => ['required'],
+            'location' => ['required'],
+            'website' => ['required'],
+            'tags' => ['required'],
+            'email' => ['required', 'email'],
+            'description' => 'required',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $formFields['logo'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        $listing->update($formFields);
+
+        return to_route('listings.index')->with('message', 'Listing updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Listing $listing)
     {
-        //
+        $listing->delete();
+        return to_route('listings.index')->with('message', 'Listing deleted successfully');
     }
 }

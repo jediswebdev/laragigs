@@ -9,5 +9,4 @@ class Listing extends Model
 {
     /** @use HasFactory<\Database\Factories\ListingFactory> */
     use HasFactory;
-
 }
