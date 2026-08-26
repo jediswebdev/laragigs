@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Listing;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -56,6 +57,9 @@ class ListingController extends Controller
             'description' => 'required',
         ]);
 
+        $formFields['user_id'] = Auth::user()->id;
+
+
         if ($request->hasFile('logo')) {
             $formFields['logo'] = $request->file('logo')->store('logos', 'public');
         }
@@ -90,6 +94,10 @@ class ListingController extends Controller
      */
     public function update(Request $request, Listing $listing)
     {
+        if ($listing->user_id != Auth::user()->id) {
+            abort(403, 'Unauthorized Action');
+        }
+
         $formFields = $request->validate([
             'title' => ['required', 'max:40'],
             'company' => ['required'],
@@ -99,6 +107,8 @@ class ListingController extends Controller
             'email' => ['required', 'email'],
             'description' => 'required',
         ]);
+
+        $formFields['user_id'] = Auth::user()->id;
 
         if ($request->hasFile('logo')) {
             Storage::disk('public')->delete($request->former_image);
@@ -115,8 +125,18 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
+        if ($listing->user_id != Auth::user()->id) {
+            abort(403, 'Unauthorized Action');
+        }
         Storage::disk('public')->delete($listing->logo);
         $listing->delete();
         return to_route('listings.index')->with('message', 'Listing deleted successfully');
+    }
+
+    public function manage()
+    {
+        return view('manage', [
+            'listings' => Listing::where('user_id', Auth::user()->id)->get()
+        ]);
     }
 }

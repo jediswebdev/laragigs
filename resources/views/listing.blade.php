@@ -15,20 +15,7 @@
                 <div class="text-lg my-4">
                     <i class="fa-solid fa-location-dot"></i> {{ $listing->location }}
                 </div>
-                <div class="p-4 m-3 flex space-x-6">
-                    <a href="/listings/{{ $listing->id }}/edit">
-                        <i class="fa-solid fa-pencil"></i>
-                         Edit
-                    </a>
-                    <form action="/listings/{{$listing->id}}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button class="text-red-500">
-                            <i class="fa-solid fa-trash"></i>
-                             Delete
-                        </button>
-                    </form>
-                </div>
+
                 <div class="border border-gray-200 w-full mb-6"></div>
                 <div>
                     <h3 class="text-3xl font-bold mb-4">

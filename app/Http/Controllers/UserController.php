@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -42,7 +43,7 @@ class UserController extends Controller
         $user = User::create($formFields);
 
         //Login user
-        auth()->login($user);
+        Auth::login($user);
 
         return redirect('/')->with('message', 'User created and logged in');
     }
@@ -50,25 +51,39 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function logout(Request $request)
     {
-        //
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('message', 'User has been logged out successfully');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function login()
     {
-        //
+        return view('users.login');
     }
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function authenticate(Request $request)
     {
-        //
+        $formFields = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required']
+        ]);
+
+        if (Auth::attempt($formFields)) { // Automatically logs user in if found in the users table
+            $request->session()->regenerate();
+
+            return redirect('/')->with('message', 'Welcome back ' . Auth::user()->name);
+        }
+
+        return back()->withErrors(['email' => 'Invalid credentials']);
     }
 
     /**
