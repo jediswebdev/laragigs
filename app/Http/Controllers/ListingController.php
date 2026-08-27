@@ -61,7 +61,7 @@ class ListingController extends Controller
 
 
         if ($request->hasFile('logo')) {
-            $formFields['logo'] = $request->file('logo')->store('logos', 'public');
+            $formFields['logo'] = $request->file('logo')->store('logos', 's3');
         }
 
         Listing::create($formFields);
@@ -111,8 +111,8 @@ class ListingController extends Controller
         $formFields['user_id'] = Auth::user()->id;
 
         if ($request->hasFile('logo')) {
-            Storage::disk('public')->delete($request->former_image);
-            $formFields['logo'] = $request->file('logo')->store('logos', 'public');
+            Storage::disk('s3')->delete($request->former_image);
+            $formFields['logo'] = $request->file('logo')->store('logos', 's3');
         }
 
         $listing->update($formFields);
@@ -128,7 +128,7 @@ class ListingController extends Controller
         if ($listing->user_id != Auth::user()->id) {
             abort(403, 'Unauthorized Action');
         }
-        Storage::disk('public')->delete($listing->logo);
+        Storage::disk('s3')->delete($listing->logo);
         $listing->delete();
         return to_route('listings.index')->with('message', 'Listing deleted successfully');
     }
