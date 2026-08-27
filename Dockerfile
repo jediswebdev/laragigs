@@ -1,13 +1,11 @@
 FROM php:8.3-fpm-alpine
 
 # Install system dependencies and PHP extensions
-
 RUN apk add --no-cache nginx wget git openssh-client postgresql-dev \
     && docker-php-ext-install pdo pdo_pgsql
 
-
-# Install Composer
-RUN curl -sS https://getcomposer.org | php -- --install-dir=/usr/local/bin --filename=composer
+# Copy Composer from the official image
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 COPY . .
@@ -24,4 +22,3 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 EXPOSE 80
 
 CMD nginx && php-fpm
-
