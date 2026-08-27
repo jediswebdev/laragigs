@@ -54,7 +54,8 @@ class ListingController extends Controller
             'website' => ['required'],
             'tags' => ['required'],
             'email' => ['required', 'email'],
-            'description' => 'required',
+            'description' => ['required', 'max:150'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048']
         ]);
 
         $formFields['user_id'] = Auth::user()->id;
@@ -105,7 +106,8 @@ class ListingController extends Controller
             'website' => ['required'],
             'tags' => ['required'],
             'email' => ['required', 'email'],
-            'description' => 'required',
+            'description' => ['required', 'max:150'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048']
         ]);
 
         $formFields['user_id'] = Auth::user()->id;
